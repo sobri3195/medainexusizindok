@@ -18,9 +18,11 @@ export const cases:ClaimCase[]=Array.from({length:128},(_,i)=>({
 }))
 
 export function summarize(source:ClaimCase[]){
-  const count=(status:CaseStatus)=>source.filter(x=>x.status===status).length
-  const sorted=source.map(x=>x.reviewMinutes).sort((a,b)=>a-b)
-  return {total:source.length,lolos:count('Lolos'),pending:count('Pending bukti'),review:count('Perlu review'),median:sorted.length?sorted[Math.floor(sorted.length/2)]:0}
+  // Satu ID hanya boleh berkontribusi sekali agar total status selalu sama dengan kasus unik.
+  const unique=[...new Map(source.map(item=>[item.id,item])).values()]
+  const count=(status:CaseStatus)=>unique.filter(x=>x.status===status).length
+  const sorted=unique.map(x=>x.reviewMinutes).sort((a,b)=>a-b)
+  return {total:unique.length,lolos:count('Lolos'),pending:count('Pending bukti'),review:count('Perlu review'),median:sorted.length?sorted[Math.floor(sorted.length/2)]:0}
 }
 export const weeklyTrend=['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map((day,i)=>({day,lolos:cases.filter((x,n)=>n%7===i&&x.status==='Lolos').length,pending:cases.filter((x,n)=>n%7===i&&x.status==='Pending bukti').length,review:cases.filter((x,n)=>n%7===i&&x.status==='Perlu review').length}))
 export const db=new Dexie('IzinDokLocal') as Dexie & {cases:EntityTable<ClaimCase,'id'>}
