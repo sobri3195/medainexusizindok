@@ -1,47 +1,46 @@
-import Dexie, { type EntityTable } from 'dexie'
+import Dexie, {type EntityTable} from 'dexie'
+import {z} from 'zod'
 
 export type CaseStatus='Lolos'|'Pending bukti'|'Perlu review'|'Dalam antrian'
 export type ModuleName='CAPD Homecare'|'PRB Farmasi'|'Konflik DPJP'|'Medical Necessity'|'Rujukan'
-export interface ClaimCase {id:string;patient:string;diagnosis:string;unit:string;facility:string;module:ModuleName;reason:string;value:number;score:number;status:CaseStatus;updated:string;reviewMinutes:number;priority:'Tinggi'|'Sedang'|'Rendah'}
+export interface AuditEvent{id:string;at:string;actor:string;action:string;reason:string;entityId?:string;from?:string;to?:string}
+export interface Evidence{id:string;name:string;type:string;status:string;updatedAt:string}
+export interface ClaimCase{id:string;claimId:string;permitId:string;episodeId:string;prescriptionId?:string;participantToken:string;participantDisplayName:string;facilityId:string;facilityName:string;practitionerId:string;practitionerName:string;module:ModuleName;serviceDate:string;diagnosisCode:string;procedureCode:string;medicationCode:string;referralNumber:string;controlLetterNumber:string;evidenceStatus:string;riskScore:number;riskLevel:'Tinggi'|'Sedang'|'Rendah';reasonCodes:string[];ruleHits:string[];workflowStatus:CaseStatus;reviewer:string;createdAt:string;updatedAt:string;auditEvents:AuditEvent[];evidence:Evidence[];patient:string;diagnosis:string;unit:string;facility:string;reason:string;value:number;score:number;status:CaseStatus;updated:string;reviewMinutes:number;priority:'Tinggi'|'Sedang'|'Rendah'}
+export interface Meta{key:string;value:string}
 
-const diagnoses=['Pneumonia, unspecified','Diabetes mellitus tipe 2','Dengue haemorrhagic fever','Essential hypertension','Chronic kidney disease']
-const units=['Rawat Inap','Poli Penyakit Dalam','Rawat Inap Anak','Rawat Jalan','Unit CAPD']
-export const facilities=['RS Sehat Sentosa','RSUD Harapan','Klinik Medika Utama']
-export const modules:ModuleName[]=['CAPD Homecare','PRB Farmasi','Konflik DPJP','Medical Necessity','Rujukan']
-export const reasons=['Dokumen belum lengkap','Indikasi klinis','Duplikasi DPJP','Kesesuaian formularium','Rujukan berjenjang']
-const statusFor=(i:number):CaseStatus=>i<91?'Lolos':i<115?'Pending bukti':'Perlu review'
-export const cases:ClaimCase[]=Array.from({length:128},(_,i)=>({
-  id:`IZN-2608-${String(i+1).padStart(3,'0')}`,patient:`${i%2?'Tn.':'Ny.'} ${String.fromCharCode(65+i%20)}-${String(100+i).slice(-3)}`,
-  diagnosis:diagnoses[i%diagnoses.length],unit:units[i%units.length],facility:facilities[i%facilities.length],module:modules[i%modules.length],reason:reasons[(i*3)%reasons.length],
-  value:1250000+(i%12)*735000,score:i<91?82+i%17:i<115?57+i%18:35+i%20,status:statusFor(i),
-  updated:new Date(Date.UTC(2026,7,29-(i%28),8-(i%6),15)).toISOString(),reviewMinutes:18+(i*7)%79,priority:i>=115?'Tinggi':i>=91?'Sedang':'Rendah'
-}))
-
-export function summarize(source:ClaimCase[]){
-  // Satu ID hanya boleh berkontribusi sekali agar total status selalu sama dengan kasus unik.
-  const unique=[...new Map(source.map(item=>[item.id,item])).values()]
-  const count=(status:CaseStatus)=>unique.filter(x=>x.status===status).length
-  const sorted=unique.map(x=>x.reviewMinutes).sort((a,b)=>a-b)
-  return {total:unique.length,lolos:count('Lolos'),pending:count('Pending bukti'),review:count('Perlu review'),median:sorted.length?sorted[Math.floor(sorted.length/2)]:0}
-}
-const diagnoses=['J18.9','E11.9','N18.5','I10','Z49.2']; const procedures=['89.03','54.98','99.17','87.44','93.90']; const meds=['MED-SYN-A12','MED-SYN-B07','MED-SYN-C31','MED-SYN-D04']
-export const facilities=['RS Sehat Sentosa','RSUD Harapan','Klinik Medika Utama']; export const reviewers=['Belum ditugaskan','dr. Rani (Demo)','Verifikator B (Demo)','Tim Klinis (Demo)']
+const diagnoses=['J18.9','E11.9','N18.5','I10','Z49.2'], procedures=['89.03','54.98','99.17','87.44','93.90'], meds=['MED-SYN-A12','MED-SYN-B07','MED-SYN-C31','MED-SYN-D04']
+export const facilities=['RS Sehat Sentosa','RSUD Harapan','Klinik Medika Utama'],reviewers=['Belum ditugaskan','dr. Rani (Demo)','Verifikator B (Demo)','Tim Klinis (Demo)']
 export const modules:ModuleName[]=['CAPD Homecare','PRB Farmasi','Konflik DPJP','Medical Necessity','Rujukan']
 export const reasons=['DOC_MISSING','CLINICAL_MISMATCH','DUPLICATE_PRACTITIONER','FORMULARY_CHECK','REFERRAL_SEQUENCE']
-const statusFor=(i:number):CaseStatus=>i<74?'Lolos':i<96?'Pending bukti':i<116?'Perlu review':'Dalam antrian'
 const iso=(i:number,h=8)=>new Date(Date.UTC(2026,7,29-(i%28),h,i%60)).toISOString()
-export const cases:ClaimCase[]=Array.from({length:128},(_,i)=>{const status=statusFor(i), riskScore=status==='Lolos'?18+i%24:status==='Dalam antrian'?62+i%29:45+i%46;const reason=reasons[(i*3)%reasons.length];return {
-  id:`CLM-SYN-26-${String(i+1).padStart(4,'0')}`,claimId:`CLM-SYN-26-${String(i+1).padStart(4,'0')}`,permitId:`IZN-2608-${String(i+1).padStart(3,'0')}`,episodeId:`EPS-SYN-${String(Math.floor(i/2)+1).padStart(4,'0')}`,prescriptionId:i%3===0?`RX-SYN-${String(i+1).padStart(4,'0')}`:undefined,
-  participantToken:`SYN-P-${String(142+i).padStart(6,'0')}`,participantDisplayName:`${i%2?'Tn.':'Ny.'} Demo ${String.fromCharCode(65+i%20)}`,
-  facilityId:`FAC-SYN-0${i%3+1}`,facilityName:facilities[i%3],practitionerId:`PRC-SYN-${String(i%12+1).padStart(3,'0')}`,practitionerName:`dr. Klinisi ${String.fromCharCode(65+i%12)} (Demo)`,module:modules[i%5],serviceDate:iso(i).slice(0,10),
-  diagnosisCode:diagnoses[i%5],procedureCode:procedures[(i*2)%5],medicationCode:meds[i%4],referralNumber:`REF-SYN-${String(3000+i).padStart(6,'0')}`,controlLetterNumber:`SKDP-SYN-${String(5000+i).padStart(6,'0')}`,
-  evidenceStatus:i%7===0?'Tidak ada':i%3===0?'Sebagian':'Lengkap',riskScore,riskLevel:riskScore>=70?'Tinggi':riskScore>=40?'Sedang':'Rendah',reasonCodes:[reason,...(i%4===0?[reasons[(i+1)%5]]:[])],ruleHits:[`RULE-${(i%7)+1}`,...(i%4===0?[`RULE-${(i%5)+8}`]:[])],workflowStatus:status,reviewer:reviewers[i%4],createdAt:iso(i,7),updatedAt:iso(i,9),
-  auditEvents:[{id:`AUD-${i}-1`,at:iso(i,7),actor:'Mesin aturan lokal',action:'Kasus dibuat',reason:`${i%4===0?2:1} rule hit terdeteksi`},{id:`AUD-${i}-2`,at:iso(i,9),actor:'Sistem',action:'Masuk workflow',reason:'Keputusan otomatis hanya rekomendasi; bukan penolakan final'}],
-  evidence:[{id:`EV-${i}-1`,name:'Ringkasan medis sintetis.pdf',type:'application/pdf',status:i%7===0?'Belum ada':'Tersedia',updatedAt:iso(i,8)},{id:`EV-${i}-2`,name:'Hasil pemeriksaan demo.jpg',type:'image/jpeg',status:i%3===0?'Kurang':'Tersedia',updatedAt:iso(i,8)}]
-}})
-export function summarize(source:ClaimCase[]){const unique=[...new Map(source.map(x=>[x.claimId,x])).values()];const count=(s:CaseStatus)=>unique.filter(x=>x.workflowStatus===s).length;const episodes=new Set(unique.map(x=>x.episodeId)).size;const prescriptions=new Set(unique.flatMap(x=>x.prescriptionId?[x.prescriptionId]:[])).size;const evidence=unique.reduce((n,x)=>n+x.evidence.length,0);return {total:unique.length,lolos:count('Lolos'),pending:count('Pending bukti'),review:count('Perlu review')+count('Dalam antrian'),median:42,episodes,prescriptions,evidence}}
-export const weeklyTrend=['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map((day,i)=>({day,lolos:cases.filter((x,n)=>n%7===i&&x.workflowStatus==='Lolos').length,pending:cases.filter((x,n)=>n%7===i&&x.workflowStatus==='Pending bukti').length,review:cases.filter((x,n)=>n%7===i&&['Perlu review','Dalam antrian'].includes(x.workflowStatus)).length}))
-export const db=new Dexie('IzinDokLocal') as Dexie & {cases:EntityTable<ClaimCase,'id'>}
-db.version(3).stores({cases:'id,claimId,permitId,episodeId,workflowStatus,updatedAt,facilityName,module,reviewer,serviceDate,riskLevel'}).upgrade(tx=>tx.table('cases').clear().then(()=>tx.table('cases').bulkAdd(cases)))
-export async function seedDatabase(){if(await db.cases.count()===0)await db.cases.bulkAdd(cases)}
+export function generateCases(count=128,scenario='Normal Operation'):ClaimCase[]{return Array.from({length:count},(_,i)=>{const status:CaseStatus=i%10<6?'Lolos':i%10<8?'Pending bukti':i%10===8?'Perlu review':'Dalam antrian';let risk=status==='Lolos'?18+i%24:45+i%46;if(scenario.includes('Spike'))risk=Math.min(99,risk+20);if(scenario.includes('False'))risk=70+i%29;const claimId=`CLM-SYN-26-${String(i+1).padStart(5,'0')}`, facility=facilities[i%3], module=scenario.includes('CAPD')?'CAPD Homecare':scenario.includes('PRB')?'PRB Farmasi':scenario.includes('DPJP')?'Konflik DPJP':modules[i%5], reason=reasons[(i*3)%5];const auditEvents=[{id:`AUD-${i}-1`,at:iso(i,7),actor:'Mesin aturan lokal',action:'Kasus dibuat',reason:'Seed deterministik dibuat di perangkat',entityId:claimId}];return {id:claimId,claimId,permitId:`IZN-2608-${String(i+1).padStart(5,'0')}`,episodeId:`EPS-SYN-${String(Math.floor(i/2)+1).padStart(5,'0')}`,prescriptionId:i%3===0?`RX-SYN-${i+1}`:undefined,participantToken:`SYN-P-${String(142+i).padStart(6,'0')}`,participantDisplayName:`${i%2?'Tn.':'Ny.'} Demo ${String.fromCharCode(65+i%20)}`,facilityId:`FAC-SYN-0${i%3+1}`,facilityName:facility,practitionerId:`PRC-SYN-${String(i%12+1).padStart(3,'0')}`,practitionerName:`dr. Klinisi ${String.fromCharCode(65+i%12)} (Demo)`,module,serviceDate:iso(i).slice(0,10),diagnosisCode:diagnoses[i%5],procedureCode:procedures[(i*2)%5],medicationCode:meds[i%4],referralNumber:`REF-SYN-${3000+i}`,controlLetterNumber:`SKDP-SYN-${5000+i}`,evidenceStatus:i%7===0?'Tidak ada':i%3===0?'Sebagian':'Lengkap',riskScore:risk,riskLevel:risk>=70?'Tinggi':risk>=40?'Sedang':'Rendah',reasonCodes:[reason],ruleHits:[`RULE-${i%7+1}`],workflowStatus:status,reviewer:reviewers[i%4],createdAt:iso(i,7),updatedAt:iso(i,9),auditEvents,evidence:[{id:`EV-${i}`,name:'Bukti sintetis.pdf',type:'application/pdf',status:i%7===0?'Belum ada':'Tersedia',updatedAt:iso(i,8)}],patient:`Demo ${i+1}`,diagnosis:diagnoses[i%5],unit:'Rawat Jalan',facility,reason,value:1250000+(i%12)*735000,score:risk,status,updated:iso(i,9),reviewMinutes:18+(i*7)%79,priority:risk>=70?'Tinggi':risk>=40?'Sedang':'Rendah'}})}
+export const cases=generateCases()
+
+class LocalDatabase extends Dexie{cases!:EntityTable<ClaimCase,'id'>;audits!:EntityTable<AuditEvent,'id'>;meta!:EntityTable<Meta,'key'>;constructor(){super('IzinDokLocal');this.version(1).stores({cases:'id,claimId,episodeId,status'});this.version(2).stores({cases:'id,claimId,episodeId,workflowStatus,updatedAt',audits:'id,at,entityId',meta:'key'});this.version(3).stores({cases:'id,&claimId,episodeId,workflowStatus,updatedAt,facilityName,module,reviewer,serviceDate,riskLevel',audits:'id,at,entityId',meta:'key'}).upgrade(tx=>tx.table('meta').put({key:'schemaMigratedAt',value:new Date().toISOString()}));}}
+const db=new LocalDatabase()
+const event=(action:string,reason:string,entityId?:string):AuditEvent=>({id:crypto.randomUUID(),at:new Date().toISOString(),actor:'Local Data Center',action,reason,entityId})
+
+const caseSchema=z.object({id:z.string().min(1),claimId:z.string().min(1),episodeId:z.string().min(1)}).passthrough()
+const backupSchema=z.object({format:z.literal('medai-local-v1'),exportedAt:z.string(),cases:z.array(caseSchema),audits:z.array(z.object({id:z.string(),at:z.string(),actor:z.string(),action:z.string(),reason:z.string()}).passthrough()),meta:z.array(z.object({key:z.string(),value:z.string()}))})
+export type IntegrityReport={ok:boolean;issues:string[];cases:number;audits:number}
+export const localData={
+  async listCases(){return db.cases.toArray()},
+  async seed(){if(await db.cases.count())return;await db.transaction('rw',db.cases,db.audits,db.meta,async()=>{await db.cases.bulkAdd(cases);await db.audits.add(event('DATABASE_SEEDED','Seed deterministik v1'));await db.meta.bulkPut([{key:'seedVersion',value:'1'},{key:'retentionDays',value:'30'}])})},
+  async updateCase(id:string,changes:Partial<ClaimCase>,reason:string){await db.transaction('rw',db.cases,db.audits,async()=>{const old=await db.cases.get(id);if(!old)throw new Error('Kasus tidak ditemukan');const audit=event('CASE_UPDATED',reason,id);await db.cases.update(id,{...changes,updatedAt:audit.at,auditEvents:[...old.auditEvents,audit]});await db.audits.add(audit)})},
+  async putCase(value:ClaimCase,reason='Pemulihan kasus'){await db.transaction('rw',db.cases,db.audits,async()=>{await db.cases.put(value);await db.audits.add(event('CASE_RESTORED',reason,value.id))})},
+  async assign(ids:string[],reviewer:string){for(const id of ids)await this.updateCase(id,{reviewer},`Penugasan ke ${reviewer}`)},
+  async reset(count=128,scenario='Normal Operation'){await db.transaction('rw',db.cases,db.audits,async()=>{await db.cases.clear();await db.cases.bulkAdd(generateCases(count,scenario));await db.audits.add(event('DATABASE_RESET',`${count} kasus · ${scenario}`))})},
+  async integrity():Promise<IntegrityReport>{const rows=await db.cases.toArray(),audits=await db.audits.count(),issues:string[]=[];const claims=new Set<string>(),episodes=new Set<string>();for(const x of rows){if(claims.has(x.claimId))issues.push(`Claim duplikat: ${x.claimId}`);claims.add(x.claimId);if(!x.episodeId)issues.push(`Episode kosong: ${x.claimId}`);episodes.add(x.episodeId);if(x.riskScore<0||x.riskScore>100)issues.push(`Risk di luar rentang: ${x.claimId}`)}return {ok:!issues.length,issues,cases:rows.length,audits}},
+  async repair(){const rows=await db.cases.toArray(),seen=new Set<string>(),clean=rows.filter(x=>{if(seen.has(x.claimId)||!x.episodeId)return false;seen.add(x.claimId);return true}).map(x=>({...x,riskScore:Math.max(0,Math.min(100,x.riskScore))}));await db.transaction('rw',db.cases,db.audits,async()=>{await db.cases.clear();await db.cases.bulkPut(clean);await db.audits.add(event('DATABASE_REPAIRED',`${rows.length-clean.length} rekaman invalid dibuang`))});return this.integrity()},
+  async backup(){return JSON.stringify({format:'medai-local-v1',exportedAt:new Date().toISOString(),cases:await db.cases.toArray(),audits:await db.audits.toArray(),meta:await db.meta.toArray()},null,2)},
+  validateImport(text:string){try{const parsed=JSON.parse(text);const result=backupSchema.safeParse(parsed);if(!result.success)return {valid:false,errors:result.error.issues.map(x=>`${x.path.join('.')}: ${x.message}`),duplicates:[],data:null};const seen=new Set<string>(),duplicates=result.data.cases.filter(x=>{const duplicate=seen.has(x.claimId);seen.add(x.claimId);return duplicate}).map(x=>x.claimId);return {valid:duplicates.length===0,errors:duplicates.length?[`${duplicates.length} claimId duplikat`]:[],duplicates,data:result.data}}catch{return {valid:false,errors:['JSON tidak valid atau sengaja dikorupsi'],duplicates:[],data:null}}},
+  async restore(text:string){const preview=this.validateImport(text);if(!preview.valid||!preview.data)throw new Error(preview.errors.join(', '));await db.transaction('rw',db.cases,db.audits,db.meta,async()=>{await db.cases.clear();await db.audits.clear();await db.meta.clear();await db.cases.bulkPut(preview.data!.cases as unknown as ClaimCase[]);await db.audits.bulkPut(preview.data!.audits);await db.meta.bulkPut(preview.data!.meta);await db.audits.add(event('BACKUP_RESTORED','Restore tervalidasi Zod selesai'))})},
+  async clear(kind:'cache'|'evidence'|'audit'){if(kind==='audit'){await db.audits.clear();return}if(kind==='evidence')await db.cases.toCollection().modify({evidence:[],evidenceStatus:'Tidak ada'});if(kind==='cache')await caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k))))},
+  async setRetention(days:number){await db.meta.put({key:'retentionDays',value:String(days)});await db.audits.add(event('RETENTION_CHANGED',`${days} hari`))},
+  async usage(){const estimate=await navigator.storage?.estimate?.();return {used:estimate?.usage||0,quota:estimate?.quota||0,persisted:await navigator.storage?.persisted?.()||false}},
+  csv(rows:ClaimCase[]){const quote=(v:unknown)=>`"${String(v??'').replaceAll('"','""')}"`;return ['claimId,episodeId,module,status,facility,risk',...rows.map(x=>[x.claimId,x.episodeId,x.module,x.workflowStatus,x.facilityName,x.riskScore].map(quote).join(','))].join('\n')}
+}
+export const seedDatabase=()=>localData.seed()
+export function summarize(source:ClaimCase[]){const unique=[...new Map(source.map(x=>[x.claimId,x])).values()],count=(s:CaseStatus)=>unique.filter(x=>x.workflowStatus===s).length;return {total:unique.length,lolos:count('Lolos'),pending:count('Pending bukti'),review:count('Perlu review')+count('Dalam antrian'),median:42,episodes:new Set(unique.map(x=>x.episodeId)).size,prescriptions:unique.filter(x=>x.prescriptionId).length,evidence:unique.reduce((n,x)=>n+x.evidence.length,0)}}
+export const weeklyTrend=['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map((day,i)=>({day,lolos:cases.filter((x,n)=>n%7===i&&x.status==='Lolos').length,pending:cases.filter((x,n)=>n%7===i&&x.status==='Pending bukti').length,review:cases.filter((x,n)=>n%7===i&&!['Lolos','Pending bukti'].includes(x.status)).length}))
 export const rupiah=(n:number)=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n)
