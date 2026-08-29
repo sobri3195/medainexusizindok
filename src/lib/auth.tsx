@@ -10,9 +10,9 @@ export const permissions:Record<DemoRole,string[]>={
   DPJP:['Ringkasan','Antrian Izin','Detail Izin','Konflik DPJP','Medical Necessity','Rujukan'],
   'Perawat CAPD':['Ringkasan','Antrian Izin','Detail Izin','CAPD Homecare'],
   'Apoteker FKTP':['Ringkasan','Antrian Izin','Detail Izin','PRB Farmasi'],
-  Verifikator:['Ringkasan','Antrian Izin','Detail Izin','CAPD Homecare','PRB Farmasi','Konflik DPJP','Medical Necessity','Rujukan','Audit Trail','Laporan'],
-  'Komite Medik':['Ringkasan','Antrian Izin','Detail Izin','Konflik DPJP','Medical Necessity','Audit Trail','Laporan'],
-  'Admin Demo':['Ringkasan','Antrian Izin','Detail Izin','CAPD Homecare','PRB Farmasi','Konflik DPJP','Medical Necessity','Rujukan','Audit Trail','Laporan','Pengaturan Demo']}
+  Verifikator:['Ringkasan','Antrian Izin','Detail Izin','CAPD Homecare','PRB Farmasi','Konflik DPJP','Medical Necessity','Rujukan','Audit Trail','Risk Engine','Laporan','Metric Dictionary'],
+  'Komite Medik':['Ringkasan','Antrian Izin','Detail Izin','Konflik DPJP','Medical Necessity','Audit Trail','Risk Engine','Laporan','Metric Dictionary'],
+  'Admin Demo':['Ringkasan','Antrian Izin','Detail Izin','CAPD Homecare','PRB Farmasi','Konflik DPJP','Medical Necessity','Rujukan','Audit Trail','Risk Engine','Laporan','Metric Dictionary','Pengaturan Demo']}
 type Auth={session:DemoSession|null;login:(r:DemoRole,p:string)=>boolean;logout:()=>void;switchRole:(r:DemoRole)=>void}
 const C=createContext<Auth|null>(null)
 const read=():DemoSession|null=>{try{const s=JSON.parse(localStorage.getItem(KEY)||'null');return s?.expiresAt>Date.now()?s:null}catch{return null}}
