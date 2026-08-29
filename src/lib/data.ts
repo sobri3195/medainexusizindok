@@ -1,13 +1,29 @@
 import Dexie, { type EntityTable } from 'dexie'
+
 export type CaseStatus='Lolos'|'Pending bukti'|'Perlu review'
-export interface ClaimCase { id:string; patient:string; diagnosis:string; unit:string; value:number; score:number; status:CaseStatus; updated:string }
-export const cases:ClaimCase[]=[
-{id:'CLM-260829-014',patient:'Ny. S-014',diagnosis:'Pneumonia, unspecified',unit:'Rawat Inap',value:12450000,score:92,status:'Lolos',updated:'2026-08-29T08:15:00Z'},
-{id:'CLM-260829-011',patient:'Tn. R-208',diagnosis:'Diabetes mellitus tipe 2',unit:'Poli Penyakit Dalam',value:3875000,score:68,status:'Pending bukti',updated:'2026-08-29T07:42:00Z'},
-{id:'CLM-260828-087',patient:'An. M-033',diagnosis:'Dengue haemorrhagic fever',unit:'Rawat Inap Anak',value:8230000,score:44,status:'Perlu review',updated:'2026-08-28T16:20:00Z'},
-{id:'CLM-260828-071',patient:'Ny. A-119',diagnosis:'Essential hypertension',unit:'Rawat Jalan',value:1260000,score:86,status:'Lolos',updated:'2026-08-28T14:08:00Z'}]
-export const trend=[{day:'Sen',lolos:72,review:18},{day:'Sel',lolos:78,review:16},{day:'Rab',lolos:74,review:21},{day:'Kam',lolos:83,review:14},{day:'Jum',lolos:88,review:12},{day:'Sab',lolos:91,review:9}]
-export const db=new Dexie('IzinDokLocal') as Dexie & { cases:EntityTable<ClaimCase,'id'> }
-db.version(1).stores({cases:'id,status,updated'})
-export async function seedDatabase(){if(await db.cases.count()===0) await db.cases.bulkAdd(cases)}
+export type ModuleName='CAPD Homecare'|'PRB Farmasi'|'Konflik DPJP'|'Medical Necessity'|'Rujukan'
+export interface ClaimCase {id:string;patient:string;diagnosis:string;unit:string;facility:string;module:ModuleName;reason:string;value:number;score:number;status:CaseStatus;updated:string;reviewMinutes:number;priority:'Tinggi'|'Sedang'|'Rendah'}
+
+const diagnoses=['Pneumonia, unspecified','Diabetes mellitus tipe 2','Dengue haemorrhagic fever','Essential hypertension','Chronic kidney disease']
+const units=['Rawat Inap','Poli Penyakit Dalam','Rawat Inap Anak','Rawat Jalan','Unit CAPD']
+export const facilities=['RS Sehat Sentosa','RSUD Harapan','Klinik Medika Utama']
+export const modules:ModuleName[]=['CAPD Homecare','PRB Farmasi','Konflik DPJP','Medical Necessity','Rujukan']
+export const reasons=['Dokumen belum lengkap','Indikasi klinis','Duplikasi DPJP','Kesesuaian formularium','Rujukan berjenjang']
+const statusFor=(i:number):CaseStatus=>i<91?'Lolos':i<115?'Pending bukti':'Perlu review'
+export const cases:ClaimCase[]=Array.from({length:128},(_,i)=>({
+  id:`IZN-2608-${String(i+1).padStart(3,'0')}`,patient:`${i%2?'Tn.':'Ny.'} ${String.fromCharCode(65+i%20)}-${String(100+i).slice(-3)}`,
+  diagnosis:diagnoses[i%diagnoses.length],unit:units[i%units.length],facility:facilities[i%facilities.length],module:modules[i%modules.length],reason:reasons[(i*3)%reasons.length],
+  value:1250000+(i%12)*735000,score:i<91?82+i%17:i<115?57+i%18:35+i%20,status:statusFor(i),
+  updated:new Date(Date.UTC(2026,7,29-(i%28),8-(i%6),15)).toISOString(),reviewMinutes:18+(i*7)%79,priority:i>=115?'Tinggi':i>=91?'Sedang':'Rendah'
+}))
+
+export function summarize(source:ClaimCase[]){
+  const count=(status:CaseStatus)=>source.filter(x=>x.status===status).length
+  const sorted=source.map(x=>x.reviewMinutes).sort((a,b)=>a-b)
+  return {total:source.length,lolos:count('Lolos'),pending:count('Pending bukti'),review:count('Perlu review'),median:sorted.length?sorted[Math.floor(sorted.length/2)]:0}
+}
+export const weeklyTrend=['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map((day,i)=>({day,lolos:cases.filter((x,n)=>n%7===i&&x.status==='Lolos').length,pending:cases.filter((x,n)=>n%7===i&&x.status==='Pending bukti').length,review:cases.filter((x,n)=>n%7===i&&x.status==='Perlu review').length}))
+export const db=new Dexie('IzinDokLocal') as Dexie & {cases:EntityTable<ClaimCase,'id'>}
+db.version(2).stores({cases:'id,status,updated,facility,module'}).upgrade(()=>undefined)
+export async function seedDatabase(){if(await db.cases.count()!==cases.length){await db.cases.clear();await db.cases.bulkAdd(cases)}}
 export const rupiah=(n:number)=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n)
