@@ -1,4 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 const app=readFileSync('src/App.tsx','utf8'),ui=readFileSync('src/components/ui.tsx','utf8'),login=readFileSync('src/pages/DesktopLogin.tsx','utf8');
+const modules=readFileSync('src/pages/Modules.tsx','utf8'),riskEngine=readFileSync('src/pages/RiskEngine.tsx','utf8');
 test('critical mobile and review workflows are routed',()=>{for(const path of ['activity','therapy','referral','account','queue','permit/:claimId','comparison'])assert.match(app,new RegExp(`path=\\"${path.replace(/[/:]/g,'\\$&')}\\"`))});
 test('modal and form errors expose accessible semantics',()=>{assert.match(ui,/aria-modal="true"/);assert.match(ui,/aria-live="polite"/);assert.match(login,/role="alert"/);assert.match(login,/aria-invalid/)});
+test('PRB continuity proposal inputs and referral reason code remain visible',()=>{for(const label of ['Form kunjungan','Riwayat rujukan FKTL < 3 bulan','Sisa obat sebelum telaah','Rujukan baru ke FKTL'])assert.match(modules,new RegExp(label));assert.match(riskEngine,/PRB_NEW_FKTL_REFERRAL/);assert.match(riskEngine,/SRB kosong atau kedaluwarsa/)});
+test('CAPD review compares delivery and generalized scan locations',()=>{for(const label of ['Alamat pengiriman cairan','Lokasi pemindaian','Pencocokan lokasi'])assert.match(modules,new RegExp(label));assert.match(modules,/bukan bukti penyalahgunaan atau penolakan layanan/)});
