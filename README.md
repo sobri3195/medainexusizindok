@@ -1,6 +1,6 @@
-# MedAI Nexus – Izin Dok
+# MedAI Nexus – JELAS
 
-Izin Dok adalah **prototype frontend-only** untuk pendamping perawatan dan workbench integritas klaim yang explainable. Aplikasi membantu petugas FKTP dan FKRTL mengelola bukti sintetis, menelusuri *reason code*, serta memprioritaskan kasus yang **perlu review**. Hasil mesin risiko hanyalah indikasi; keputusan akhir selalu dilakukan manusia dan tidak boleh memblokir pelayanan pasien. Kondisi emergensi harus langsung diarahkan ke pelayanan tanpa blokir administratif.
+JELAS (Jejak Evaluasi Layanan dan Analisis Sinyal) adalah **prototype frontend-only** untuk pendamping perawatan dan workbench integritas klaim yang explainable. Aplikasi membantu petugas FKTP dan FKRTL mengelola bukti sintetis, menelusuri *reason code*, serta memprioritaskan kasus yang **perlu review**. Hasil mesin risiko hanyalah indikasi; keputusan akhir selalu dilakukan manusia dan tidak boleh memblokir pelayanan pasien. Kondisi emergensi harus langsung diarahkan ke pelayanan tanpa blokir administratif.
 
 > **Status integrasi:** prototype ini tidak terintegrasi dengan BPJS, SATUSEHAT, SIMRS, OTP, maupun TTE. Model/risk engine demo belum divalidasi klinis atau operasional.
 
@@ -95,4 +95,4 @@ Autentikasi ini hanya simulasi lokal dan tidak layak digunakan sebagai autentika
 
 ## Disclaimer privasi dan klinis
 
-Gunakan aplikasi hanya dengan data sintetis. Jangan memasukkan NIK, nomor peserta, foto, dokumen, atau identitas pasien nyata. Izin Dok bukan alat diagnosis, bukan pengganti penilaian klinis, dan bukan sistem penentu eligibilitas. Reviewer manusia tetap bertanggung jawab atas keputusan akhir. Pelayanan emergensi harus diberikan tanpa diblokir oleh status, skor, kelengkapan bukti, atau keluaran prototype ini.
+Gunakan aplikasi hanya dengan data sintetis. Jangan memasukkan NIK, nomor peserta, foto, dokumen, atau identitas pasien nyata. JELAS bukan alat diagnosis, bukan pengganti penilaian klinis, dan bukan sistem penentu eligibilitas. Reviewer manusia tetap bertanggung jawab atas keputusan akhir. Pelayanan emergensi harus diberikan tanpa diblokir oleh status, skor, kelengkapan bukti, atau keluaran prototype ini.
