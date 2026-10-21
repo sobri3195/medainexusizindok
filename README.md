@@ -31,7 +31,7 @@ Seluruh halaman dimuat secara lazy berdasarkan route. Modul chart ikut terpisah 
 
 ## Install dan menjalankan lokal
 
-Prasyarat: Node.js 20+ dan npm.
+Prasyarat: Node.js 24 (disarankan), minimum 22.18 untuk seluruh pengujian, dan npm.
 
 ```bash
 npm install
@@ -96,3 +96,44 @@ Autentikasi ini hanya simulasi lokal dan tidak layak digunakan sebagai autentika
 ## Disclaimer privasi dan klinis
 
 Gunakan aplikasi hanya dengan data sintetis. Jangan memasukkan NIK, nomor peserta, foto, dokumen, atau identitas pasien nyata. JELAS bukan alat diagnosis, bukan pengganti penilaian klinis, dan bukan sistem penentu eligibilitas. Reviewer manusia tetap bertanggung jawab atas keputusan akhir. Pelayanan emergensi harus diberikan tanpa diblokir oleh status, skor, kelengkapan bukti, atau keluaran prototype ini.
+
+## Validasi identitas, obat PRB, dan cairan dialisis
+
+Modul tambahan berada di **Workbench → Validasi Penyerahan** (`/desktop/dispensing`). Stack dan fitur lama dipertahankan. Mode selalu **DEMO / SIMULATION_ONLY**, seluruh data sintetis; integrasi produksi **NOT_CONNECTED**.
+
+Gunakan Node.js 24 (disarankan; pengujian TypeScript native memerlukan Node ≥22.18) dan npm:
+
+```bash
+npm install --package-lock=false
+npm run dev
+npm test
+npm run lint
+npm run test:browser
+```
+
+Repository belum memiliki lockfile. `--package-lock=false` mempertahankan kebijakan tersebut; resolusi baru dapat berbeda. Browser test memakai `/usr/bin/chromium` jika tersedia, `CHROMIUM_PATH` jika disetel, atau Chromium Playwright yang dipasang dengan `npx playwright install chromium`.
+
+Demonstrasi:
+
+1. Login sebagai **Admin Demo** (password demo di halaman login).
+2. Buka **Validasi Penyerahan → Verifikasi Peserta**. Pilih peserta 1, metode FACE/FINGERPRINT, dan SUCCESS. Hasil tetap SIMULATION_ONLY.
+3. Buka **Obat PRB**, pilih RX-0001, klik simulasi `DEMO-BC-0001`, isi jumlah ≤30, lalu tinjau dan konfirmasi.
+4. Untuk dialisis gunakan RX-0002 dan `DEMO-BC-0002`. RX-0009 menyediakan produk kedaluwarsa. Barcode 9999 tidak dikenal; produk 0002 tidak cocok dengan resep PRB 0001.
+5. Riwayat menyediakan pembatalan dan uji duplikat. Periksa Dashboard, Data Explorer, Evaluasi Data, Audit Trail, Status Integrasi, dan Pengaturan & Role.
+6. Coba peserta 2 (tanpa hak), peserta 3 (kepemilikan akun gagal), serta skenario FAILED/PENDING/EXPIRED/REQUIRES_REVIEW/UNAVAILABLE/NOT_CONNECTED.
+
+Satu hak demo hanya digunakan sekali, termasuk penyerahan sebagian. Pembatalan tidak membuka hak lagi. Tidak ada biometrik mentah, foto, NIK, atau rahasia yang disimpan. Role dan audit browser adalah demonstrasi, bukan kontrol keamanan produksi.
+
+Lihat [audit, diagram, skema, kontrak adapter, penggantian dataset, evaluasi field, dan pertanyaan untuk pemilik layanan](docs/VALIDASI-PENYERAHAN.md).
+
+Untuk demo offline, gunakan build produksi dan preview, buka sekali online sampai service worker aktif. Semua chunk aplikasi diprecache. Ini tidak menyediakan integrasi/sinkronisasi BPJS atau membuktikan konsumsi produk.
+
+Generator dataset skenario (tujuh tabel JSON/CSV terpisah, snapshot, dan manifest skenario):
+
+```bash
+npm run data:synthetic
+# Default: /tmp/jelas-synthetic; direktori lain dapat ditentukan:
+npm run data:synthetic -- /tmp/jelas-evaluasi
+```
+
+File generator tidak diimpor otomatis ke database browser; fixture pengujian dan data demonstrasi pengguna tetap terpisah.

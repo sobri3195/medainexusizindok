@@ -3,7 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": {"dev":"vite","build":"tsc -b && vite build","lint":"eslint . --max-warnings 0","typecheck":"tsc -b --pretty false","test":"npm run typecheck","preview":"vite preview"},
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc -b --pretty false",
+    "test": "npm run typecheck && node --experimental-strip-types --test tests/*.test.ts",
+    "preview": "vite preview",
+    "test:browser": "npm run build && node tests/browser-smoke.mjs",
+    "data:synthetic": "node scripts/generate-synthetic.mjs"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
     "date-fns": "^4.1.0",
@@ -27,6 +36,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "playwright": "1.64.1",
     "tailwindcss": "^4.1.12",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.41.0",
