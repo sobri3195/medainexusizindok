@@ -37,10 +37,19 @@ class ProcessorTests(unittest.TestCase):
         result = subprocess.run([sys.executable, str(script), str(self.source), '--inspect'], capture_output=True, text=True, check=True)
         self.assertEqual(json.loads(result.stdout), {'columns': ['diag', 'private_id']})
         output = Path(self.temp.name) / 'summary.json'
-        subprocess.run([sys.executable, str(script), str(self.source), '--diagnosis-column', 'diag', '--output', str(output)], capture_output=True, check=True)
+        subprocess.run([sys.executable, str(script), str(self.source), '--diagnosis-column', 'diag', '--output', str(output), '--dataset', 'FKRTL'], capture_output=True, check=True)
         self.assertEqual(json.loads(output.read_text())['mode'], 'USER_AGGREGATE')
+        self.assertEqual(json.loads(output.read_text())['dataset'], 'FKRTL')
         overwrite = subprocess.run([sys.executable, str(script), str(self.source), '--diagnosis-column', 'diag', '--output', str(output)], capture_output=True)
         self.assertNotEqual(overwrite.returncode, 0)
+
+    def test_fkrtl_profile_is_explicit_and_does_not_export_raw_rows(self):
+        result = processor.aggregate(self.source, 'diag', dataset='FKRTL')
+        self.assertEqual(result['dataset'], 'FKRTL')
+        self.assertEqual(result['mode'], 'USER_AGGREGATE')
+        self.assertNotIn('private_id', json.dumps(result))
+        with self.assertRaises(ValueError):
+            processor.aggregate(self.source, 'diag', dataset='UNKNOWN')
 
     def test_rejects_small_threshold_and_wrong_mapping(self):
         with self.assertRaises(ValueError):

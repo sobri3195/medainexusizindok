@@ -10,7 +10,9 @@ import pandas as pd
 ICD = re.compile(r"^[A-Z][0-9]{2}(?:\.[A-Z0-9]{1,4})?$")
 
 
-def aggregate(path, column, threshold=10, synthetic=False, chunksize=50000):
+def aggregate(path, column, threshold=10, synthetic=False, chunksize=50000, dataset="UNSPECIFIED"):
+    if dataset not in {"UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES"}:
+        raise ValueError("Unsupported dataset profile")
     if threshold < 10:
         raise ValueError("Minimum cell threshold is 10")
     counts = Counter()
@@ -34,6 +36,7 @@ def aggregate(path, column, threshold=10, synthetic=False, chunksize=50000):
     groups = [{"code": code, "count": count} for code, count in sorted(counts.items()) if count >= threshold]
     return {"format": "jelas-diagnoses-aggregate-v1",
             "mode": "SYNTHETIC" if synthetic else "USER_AGGREGATE",
+            "dataset": dataset,
             "sourceType": "STATA_LOCAL_AGGREGATION",
             "minCellCount": threshold, "rows": rows, "missing": missing,
             "invalid": invalid, "valid": sum(counts.values()),
@@ -46,6 +49,7 @@ def main():
     parser.add_argument("input", type=Path)
     parser.add_argument("--inspect", action="store_true", help="Print column names only, never values/labels")
     parser.add_argument("--diagnosis-column")
+    parser.add_argument("--dataset", choices=["UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES"], default="UNSPECIFIED", help="Source profile confirmed by data owner; never inferred from filename")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--min-cell-count", type=int, default=10)
     parser.add_argument("--synthetic", action="store_true", help="Only if source is genuinely synthetic")
@@ -59,7 +63,7 @@ def main():
             parser.error("--diagnosis-column and --output are required")
         if args.input.resolve() == args.output.resolve() or args.output.exists():
             parser.error("Output must be a new file, distinct from the source")
-        result = aggregate(args.input, args.diagnosis_column, args.min_cell_count, args.synthetic)
+        result = aggregate(args.input, args.diagnosis_column, args.min_cell_count, args.synthetic, dataset=args.dataset)
         with args.output.open("x", encoding="utf-8") as output:
             json.dump(result, output, indent=2)
         print("Aggregate written. Review authorization and disclosure risk before sharing.")
