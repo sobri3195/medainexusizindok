@@ -227,6 +227,18 @@ try {
   await page.goto(base + "/desktop/diagnosis-analysis");
   await page.getByRole("button", { name: "Muat contoh sintetis" }).click();
   await page.getByText("DATA SINTETIS", { exact: true }).waitFor();
+  await page
+    .getByRole("button", { name: "Muat contoh model sintetis", exact: true })
+    .click();
+  await page
+    .getByRole("heading", {
+      name: "Model AI terlatih · review kualitas data",
+      exact: true,
+    })
+    .waitFor();
+  await page
+    .getByText("Skor probabilitas label sintetis", { exact: false })
+    .waitFor();
   await page.getByRole("checkbox").check();
   const summary = {
     format: "jelas-diagnoses-aggregate-v1",
@@ -249,11 +261,16 @@ try {
   await page
     .getByText("AGREGAT PENGGUNA · BUKAN DATA DEMO", { exact: true })
     .waitFor();
+  await page.getByText("PREDIKSI DITAHAN", { exact: false }).waitFor();
   await page.getByLabel("Ringkasan JSON agregat").setInputFiles({
-    name:"wrong-profile.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify({...summary,dataset:"SECONDARY_DIAGNOSES"}))
+    name: "wrong-profile.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(
+      JSON.stringify({ ...summary, dataset: "SECONDARY_DIAGNOSES" }),
+    ),
   });
-  await page.getByRole("alert").filter({hasText:"Impor ditolak"}).waitFor();
-  await page.getByText("Sumber dataset: FKRTL",{exact:false}).waitFor();
+  await page.getByRole("alert").filter({ hasText: "Impor ditolak" }).waitFor();
+  await page.getByText("Sumber dataset: FKRTL", { exact: false }).waitFor();
   await page.getByLabel("Ringkasan JSON agregat").setInputFiles({
     name: "bad.json",
     mimeType: "application/json",

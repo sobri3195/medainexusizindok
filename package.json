@@ -11,7 +11,9 @@
     "test": "npm run typecheck && node --experimental-strip-types --test tests/*.test.ts",
     "preview": "vite preview",
     "test:browser": "npm run build && node tests/browser-smoke.mjs",
-    "data:synthetic": "node scripts/generate-synthetic.mjs"
+    "data:synthetic": "node scripts/generate-synthetic.mjs",
+    "model:train": "python tools/train_quality_model.py",
+    "test:model": "python -m unittest discover -s tests -p test_quality_training.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
