@@ -30,7 +30,7 @@ Penggantian profil mengosongkan ringkasan aktif. Impor mengganti ringkasan di me
 
 ## Batas analisis dan perlindungan data
 
-Analisis yang tersedia adalah frekuensi kode, kelengkapan, kesesuaian format kode, dan penjelasan kualitas berbasis aturan. Bukan model AI terlatih, keputusan klinis, temuan fraud, atau validasi kepesertaan BPJS. Regex kode bukan kamus ICD resmi.
+Analisis yang tersedia adalah frekuensi kode, kelengkapan, kesesuaian format kode, dan penjelasan kualitas berbasis aturan. Model terlatih review kualitas data sintetis tersedia terpisah, namun menahan inferensi pada agregat pengguna. Ini bukan keputusan klinis, temuan fraud, atau validasi kepesertaan BPJS. Regex kode bukan kamus ICD resmi.
 
 Hanya agregat kode dengan hitungan minimal 10 yang dikeluarkan; tidak ada ID pasien atau baris mentah yang dimasukkan ke Git atau database demo. Supresi bukan jaminan anonimitas dan tetap memerlukan tinjauan pengungkapan oleh pemilik data. Ringkasan pengguna tidak dikirim ke LLM/server atau disimpan permanen oleh halaman.
 

@@ -38,9 +38,9 @@ Supresi sel kecil mengurangi pengungkapan kode langka tetapi **tidak menjamin an
 
 ## Apa yang dianalisis
 
-Analisis berbasis aturan, bukan AI terlatih: kualitas format kode, kelengkapan, frekuensi agregat, dan penjelasan keterbatasan sumber. Tidak menyimpulkan fraud, tingkat keparahan, kelayakan peserta, akurasi klinis, atau kebutuhan terapi. Hitungan baris bukan jumlah pasien unik. Tidak tersedia identitas untuk deduplikasi, label outcome, data longitudinal, atau ground truth untuk evaluasi model.
+Analisis berbasis aturan tetap tersedia: kualitas format kode, kelengkapan, frekuensi agregat, dan penjelasan keterbatasan sumber. Tidak menyimpulkan fraud, tingkat keparahan, kelayakan peserta, akurasi klinis, atau kebutuhan terapi. Hitungan baris bukan jumlah pasien unik. Tidak tersedia identitas untuk deduplikasi, label outcome, data longitudinal, atau ground truth untuk evaluasi model.
 
-Untuk model AI berikutnya diperlukan tujuan/target terukur, izin pemrosesan, kamus data, unit observasi, relasi diagnosis primer/sekunder, pemisahan train/test menurut peserta dan waktu, evaluasi bias/kalibrasi, validasi klinis, serta backend aman. Tidak ada training atau integrasi BPJS dalam perubahan ini.
+Untuk model AI berikutnya diperlukan tujuan/target terukur, izin pemrosesan, kamus data, unit observasi, relasi diagnosis primer/sekunder, pemisahan train/test menurut peserta dan waktu, evaluasi bias/kalibrasi, validasi klinis, serta backend aman. Model review kualitas data kini tersedia sebagai model terlatih hanya pada data sintetis; lihat [model card](MODEL-QUALITY.md). Tidak ada training pada DM2024 atau integrasi BPJS.
 
 ## Yang masih dibutuhkan untuk file asli
 

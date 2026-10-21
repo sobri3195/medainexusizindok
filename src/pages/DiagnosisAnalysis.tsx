@@ -1,3 +1,5 @@
+import { TrainedQualityModel } from "../components/TrainedQualityModel";
+import { syntheticModelSummary } from "../lib/qualityModel";
 import { useState } from "react";
 import {
   Alert,
@@ -70,8 +72,9 @@ export default function DiagnosisAnalysis() {
           Diagnosis FKRTL / sekunder: kualitas data & pola agregat
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          Analisis lokal berbasis aturan yang dapat dijelaskan. Bukan model AI
-          terlatih, diagnosis klinis, prediksi fraud, atau penentu hak layanan.
+          Analisis kualitas data dengan aturan dan model terlatih pada data
+          sintetis. Bukan diagnosis klinis, prediksi fraud, atau penentu hak
+          layanan.
         </p>
       </header>
       <Alert>
@@ -135,6 +138,18 @@ export default function DiagnosisAnalysis() {
         </label>
         <div className="flex flex-wrap gap-3">
           <Button
+            disabled={busy}
+            onClick={() => {
+              setData(syntheticModelSummary(profile));
+              setError("");
+              setSuccess(
+                "Contoh model sintetis dimuat; bukan hasil data DM2024.",
+              );
+            }}
+          >
+            Muat contoh model sintetis
+          </Button>
+          <Button
             disabled={busy || !allowed}
             onClick={() => {
               setData(syntheticDiagnosisSummary(profile));
@@ -191,6 +206,7 @@ export default function DiagnosisAnalysis() {
       )}
       {result ? (
         <>
+          <TrainedQualityModel data={data!} />
           <Badge tone={data!.mode === "SYNTHETIC" ? "blue" : "amber"}>
             {data!.mode === "SYNTHETIC"
               ? "DATA SINTETIS"

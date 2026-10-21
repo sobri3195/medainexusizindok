@@ -149,3 +149,11 @@ File `DM2024_diagnosissekunder.dta` yang dilampirkan belum diproses karena meleb
 Profil **FKRTL** kini tersedia pada Analisis Diagnosis. Konversi menggunakan `--dataset FKRTL` dan kolom diagnosis yang dikonfirmasi dari kamus data; importer memeriksa profil sebelum menerima ringkasan. Profil FKRTL dan diagnosis sekunder tidak digabung otomatis. Format lama tetap didukung sebagai `UNSPECIFIED`.
 
 Lampiran `DM2024_fkrtl.dta` belum terbaca karena melebihi batas transfer 32 MiB. Tidak ada data asli atau hasil analisisnya yang disertakan. Lihat [langkah pengolahan FKRTL dan kebutuhan file lanjutan](docs/DATA-FKRTL.md).
+
+## Model terlatih untuk review kualitas data
+
+JELAS kini menyertakan regresi logistik **yang benar-benar dilatih pada data sintetis**: 4.000 contoh training, 1.000 validasi, 1.000 test. Target: prioritas review kualitas data diagnosis, bukan fraud/penyakit atau hak layanan. ROC-AUC test sintetis 0,756; Brier 0,198 dibanding baseline 0,248.
+
+Buka **Analisis Diagnosis → Muat contoh model sintetis** untuk melihat skor dan kontribusi fitur. Model menahan prediksi pada agregat pengguna dan fitur di luar rentang training. Kedua file DM2024 tidak digunakan untuk training karena belum dapat diakses.
+
+Training ulang: pasang `tools/requirements-training.txt`, lalu `npm run model:train`. Detail data, label, split, metrik, keterbatasan, dan kebutuhan label nyata ada pada [model card](docs/MODEL-QUALITY.md).
