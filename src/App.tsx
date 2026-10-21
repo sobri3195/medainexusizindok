@@ -5,6 +5,19 @@ import {Skeleton} from './components/ui'
 import {DesktopLayout,MobileLayout,PublicLayout} from './layouts/Shells'
 import {DemoAuthProvider} from './lib/auth'
 
+const DispensingLayout=lazy(()=>import('./pages/Dispensing'))
+const DispensingDashboard=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.DispensingDashboard})))
+const ParticipantVerification=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.ParticipantVerification})))
+const PRBDispensing=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.PRBDispensing})))
+const DialysisDispensing=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.DialysisDispensing})))
+const ProductScanner=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.ProductScanner})))
+const TransactionHistory=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.TransactionHistory})))
+const DataExplorer=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.DataExplorer})))
+const DataEvaluation=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.DataEvaluation})))
+const DispensingAudit=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.DispensingAudit})))
+const IntegrationStatus=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.IntegrationStatus})))
+const DispensingSettings=lazy(()=>import('./pages/Dispensing').then(m=>({default:m.DispensingSettings})))
+
 const Landing=lazy(()=>import('./pages/Landing'))
 const Desktop=lazy(()=>import('./pages/Desktop'))
 const DesktopLogin=lazy(()=>import('./pages/DesktopLogin'))
@@ -38,6 +51,19 @@ export default function App(){return <DemoAuthProvider><CommandPalette/><Routes>
   </Route>
   <Route path="desktop/login" element={<Page component={DesktopLogin}/>}/>
   <Route path="desktop" element={<DesktopLayout/>}>
+    <Route path="dispensing" element={<Page component={DispensingLayout}/>}>
+      <Route index element={<Page component={DispensingDashboard}/>}/>
+      <Route path="verify" element={<Page component={ParticipantVerification}/>}/>
+      <Route path="prb" element={<Page component={PRBDispensing}/>}/>
+      <Route path="dialysis" element={<Page component={DialysisDispensing}/>}/>
+      <Route path="scan" element={<Page component={ProductScanner}/>}/>
+      <Route path="history" element={<Page component={TransactionHistory}/>}/>
+      <Route path="data" element={<Page component={DataExplorer}/>}/>
+      <Route path="evaluation" element={<Page component={DataEvaluation}/>}/>
+      <Route path="audit" element={<Page component={DispensingAudit}/>}/>
+      <Route path="integration" element={<Page component={IntegrationStatus}/>}/>
+      <Route path="settings" element={<Page component={DispensingSettings}/>}/>
+    </Route>
     <Route index element={<Page component={Desktop}/>}/>
     <Route path="queue" element={<Page component={Queue}/>}/>
     <Route path="permit" element={<Page component={Queue}/>}/>

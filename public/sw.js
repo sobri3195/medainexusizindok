@@ -1,14 +1,20 @@
-const CACHE='izin-dok-v2'
+const CACHE='izin-dok-v3-dispensing'
 const SHELL=['/','/apps','/manifest.webmanifest']
 
 self.addEventListener('install',event=>{
   self.skipWaiting()
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)))
+  event.waitUntil((async()=>{
+    const response=await fetch('/offline-assets.json',{cache:'no-store'})
+    if(!response.ok)throw new Error('Offline asset manifest unavailable')
+    const assets=await response.json()
+    const cache=await caches.open(CACHE)
+    await cache.addAll([...new Set([...SHELL,...assets.map(path=>'/'+path)])])
+  })())
 })
 
 self.addEventListener('activate',event=>event.waitUntil(
   caches.keys()
-    .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
+    .then(keys=>Promise.all(keys.filter(key=>key.startsWith('izin-dok-')&&key!==CACHE).map(key=>caches.delete(key))))
     .then(()=>self.clients.claim())
 ))
 
