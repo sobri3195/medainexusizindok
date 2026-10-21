@@ -117,14 +117,36 @@ try {
     .getByRole("button", { name: "Tinjau & konfirmasi penyerahan" })
     .click();
   // Separate tabs have independent UI locks; the database must still commit once.
-  const racer=await context.newPage();
-  racer.on('pageerror',e=>errors.push(e.message));
-  await racer.goto(base+'/desktop/dispensing/prb');
-  await racer.getByRole('button',{name:'Tinjau & konfirmasi penyerahan'}).click();
-  await Promise.all([page,racer].map(tab=>tab.getByRole('button',{name:'Simpan penyerahan sintetis'}).click()));
-  await Promise.all([page,racer].map(tab=>tab.getByRole('status').filter({hasText:/Penyerahan sintetis selesai/}).or(tab.getByRole('alert').filter({hasText:'Transaksi ganda dicegah'})).waitFor()));
-  const successCount=(await page.getByText('Penyerahan sintetis selesai;',{exact:false}).count())+(await racer.getByText('Penyerahan sintetis selesai;',{exact:false}).count());
-  assert.equal(successCount,1,'exactly one tab may commit');
+  const racer = await context.newPage();
+  racer.on("pageerror", (e) => errors.push(e.message));
+  await racer.goto(base + "/desktop/dispensing/prb");
+  await racer
+    .getByRole("button", { name: "Tinjau & konfirmasi penyerahan" })
+    .click();
+  await Promise.all(
+    [page, racer].map((tab) =>
+      tab.getByRole("button", { name: "Simpan penyerahan sintetis" }).click(),
+    ),
+  );
+  await Promise.all(
+    [page, racer].map((tab) =>
+      tab
+        .getByRole("status")
+        .filter({ hasText: /Penyerahan sintetis selesai/ })
+        .or(
+          tab.getByRole("alert").filter({ hasText: "Transaksi ganda dicegah" }),
+        )
+        .waitFor(),
+    ),
+  );
+  const successCount =
+    (await page
+      .getByText("Penyerahan sintetis selesai;", { exact: false })
+      .count()) +
+    (await racer
+      .getByText("Penyerahan sintetis selesai;", { exact: false })
+      .count());
+  assert.equal(successCount, 1, "exactly one tab may commit");
   await racer.close();
   await route("Riwayat");
   await page.getByRole("button", { name: "Uji duplikat" }).click();
@@ -162,9 +184,17 @@ try {
     await route(name);
     await page.getByRole("heading", { name: title, exact: true }).waitFor();
   }
-  await page.evaluate(()=>Object.defineProperty(window,'BarcodeDetector',{value:undefined,configurable:true}));
-  await page.getByRole('button',{name:'Scan kamera',exact:true}).click();
-  await page.getByRole('alert').filter({hasText:'BarcodeDetector tidak didukung'}).waitFor();
+  await page.evaluate(() =>
+    Object.defineProperty(window, "BarcodeDetector", {
+      value: undefined,
+      configurable: true,
+    }),
+  );
+  await page.getByRole("button", { name: "Scan kamera", exact: true }).click();
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "BarcodeDetector tidak didukung" })
+    .waitFor();
   await route("Status Integrasi");
   await page.getByLabel("Konfigurasi adapter").selectOption("production");
   assert.equal(
@@ -193,6 +223,55 @@ try {
     fullPage: true,
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
+  // Diagnosis import is aggregate-only and never enters the synthetic transaction store.
+  await page.goto(base + "/desktop/diagnosis-analysis");
+  await page.getByRole("button", { name: "Muat contoh sintetis" }).click();
+  await page.getByText("DATA SINTETIS", { exact: true }).waitFor();
+  await page.getByRole("checkbox").check();
+  const summary = {
+    format: "jelas-diagnoses-aggregate-v1",
+    mode: "USER_AGGREGATE",
+    sourceType: "STATA_LOCAL_AGGREGATION",
+    minCellCount: 10,
+    rows: 20,
+    missing: 0,
+    invalid: 0,
+    valid: 20,
+    suppressed: 0,
+    groups: [{ code: "E11.9", count: 20 }],
+  };
+  await page
+    .getByLabel("Ringkasan JSON agregat")
+    .setInputFiles({
+      name: "summary.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(summary)),
+    });
+  await page
+    .getByText("AGREGAT PENGGUNA · BUKAN DATA DEMO", { exact: true })
+    .waitFor();
+  await page
+    .getByLabel("Ringkasan JSON agregat")
+    .setInputFiles({
+      name: "bad.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(
+        JSON.stringify({ ...summary, patientId: "forbidden" }),
+      ),
+    });
+  await page.getByRole("alert").filter({ hasText: "Impor ditolak" }).waitFor();
+  await page
+    .getByRole("button", { name: "Hapus ringkasan dari memori" })
+    .click();
+  await page
+    .getByText("Belum ada ringkasan diagnosis yang dimuat", { exact: true })
+    .waitFor();
+  await page.getByLabel("Ganti role").selectOption("DPJP");
+  await page
+    .getByText("Halaman analisis memerlukan role", { exact: false })
+    .waitFor();
+  await page.getByLabel("Ganti role").selectOption("Admin Demo");
+  await page.goto(base + "/desktop/dispensing");
   // All generated JS/CSS must be precached; test routes and a new transaction offline.
   await page.evaluate(async () => {
     const registration = await navigator.serviceWorker.ready;

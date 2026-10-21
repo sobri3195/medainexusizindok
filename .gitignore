@@ -4,3 +4,11 @@ dist
 !.env.example
 *.tsbuildinfo
 .vercel
+
+# Raw health datasets and local aggregate outputs must never be committed.
+*.dta
+*.dta.gz
+*.dta.zip
+private-data/
+*diagnosis-summary*.json
+__pycache__/

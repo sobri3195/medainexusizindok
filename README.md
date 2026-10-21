@@ -137,3 +137,9 @@ npm run data:synthetic -- /tmp/jelas-evaluasi
 ```
 
 File generator tidak diimpor otomatis ke database browser; fixture pengujian dan data demonstrasi pengguna tetap terpisah.
+
+## Analisis diagnosis sekunder dari Stata
+
+Tersedia **Workbench → Analisis Diagnosis**, dengan jalur konversi `.dta` lokal menjadi JSON agregat lalu analisis kualitas/frekuensi berbasis aturan. File mentah tidak dimasukkan ke Git, database demo, atau layanan AI eksternal. Contoh sintetis dan agregat pengguna diberi label terpisah.
+
+File `DM2024_diagnosissekunder.dta` yang dilampirkan belum diproses karena melebihi batas transfer 32 MiB. Panduan konversi, batas privasi, kebutuhan pemetaan kolom, dan langkah lanjutan ada di [Analisis Diagnosis](docs/ANALISIS-DIAGNOSIS.md).
