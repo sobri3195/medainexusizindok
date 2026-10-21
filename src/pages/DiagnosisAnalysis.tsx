@@ -113,6 +113,7 @@ export default function DiagnosisAnalysis() {
             }}
           >
             <option value="FKRTL">FKRTL</option>
+            <option value="NONKAPITASI">Nonkapitasi</option>
             <option value="SECONDARY_DIAGNOSES">Diagnosis sekunder</option>
             <option value="UNSPECIFIED">Belum ditentukan (format lama)</option>
           </Select>

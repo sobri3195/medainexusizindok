@@ -5,7 +5,7 @@ export const diagnosisSummarySchema = z
     format: z.literal("jelas-diagnoses-aggregate-v1"),
     mode: z.enum(["SYNTHETIC", "USER_AGGREGATE"]),
     dataset: z
-      .enum(["UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES"])
+      .enum(["UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES", "NONKAPITASI"])
       .default("UNSPECIFIED"),
     sourceType: z.literal("STATA_LOCAL_AGGREGATION"),
     minCellCount: count.min(10),

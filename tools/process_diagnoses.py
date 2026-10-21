@@ -11,7 +11,7 @@ ICD = re.compile(r"^[A-Z][0-9]{2}(?:\.[A-Z0-9]{1,4})?$")
 
 
 def aggregate(path, column, threshold=10, synthetic=False, chunksize=50000, dataset="UNSPECIFIED"):
-    if dataset not in {"UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES"}:
+    if dataset not in {"UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES", "NONKAPITASI"}:
         raise ValueError("Unsupported dataset profile")
     if threshold < 10:
         raise ValueError("Minimum cell threshold is 10")
@@ -49,7 +49,7 @@ def main():
     parser.add_argument("input", type=Path)
     parser.add_argument("--inspect", action="store_true", help="Print column names only, never values/labels")
     parser.add_argument("--diagnosis-column")
-    parser.add_argument("--dataset", choices=["UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES"], default="UNSPECIFIED", help="Source profile confirmed by data owner; never inferred from filename")
+    parser.add_argument("--dataset", choices=["UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES", "NONKAPITASI"], default="UNSPECIFIED", help="Source profile confirmed by data owner; never inferred from filename")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--min-cell-count", type=int, default=10)
     parser.add_argument("--synthetic", action="store_true", help="Only if source is genuinely synthetic")

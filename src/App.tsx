@@ -22,6 +22,7 @@ const Landing=lazy(()=>import('./pages/Landing'))
 const Desktop=lazy(()=>import('./pages/Desktop'))
 const DesktopLogin=lazy(()=>import('./pages/DesktopLogin'))
 const LocalDataCenter=lazy(()=>import('./pages/LocalDataCenter'))
+const Nonkapitasi=lazy(()=>import('./pages/Nonkapitasi'))
 const DiagnosisAnalysis=lazy(()=>import('./pages/DiagnosisAnalysis'))
 const RiskEngine=lazy(()=>import('./pages/RiskEngine'))
 const Reports=lazy(()=>import('./pages/Reports'))
@@ -73,6 +74,7 @@ export default function App(){return <DemoAuthProvider><CommandPalette/><Routes>
     <Route path="capd" element={<Page component={Capd}/>}/>
     <Route path="pharmacy" element={<Page component={Pharmacy}/>}/>
     <Route path="dpjp" element={<Page component={Dpjp}/>}/>
+    <Route path="nonkapitasi" element={<Page component={Nonkapitasi}/>}/>
     <Route path="diagnosis-analysis" element={<Page component={DiagnosisAnalysis}/>}/>
     <Route path="risk-engine" element={<Page component={RiskEngine}/>}/>
     <Route path="reports" element={<Page component={Reports}/>}/>

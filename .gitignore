@@ -12,3 +12,7 @@ dist
 private-data/
 *diagnosis-summary*.json
 __pycache__/
+
+# Private user-trained models and nonkapitasi aggregate reports
+*nonkapitasi-analysis*.json
+*nonkapitasi-model*.json

@@ -157,3 +157,9 @@ JELAS kini menyertakan regresi logistik **yang benar-benar dilatih pada data sin
 Buka **Analisis Diagnosis → Muat contoh model sintetis** untuk melihat skor dan kontribusi fitur. Model menahan prediksi pada agregat pengguna dan fitur di luar rentang training. Kedua file DM2024 tidak digunakan untuk training karena belum dapat diakses.
 
 Training ulang: pasang `tools/requirements-training.txt`, lalu `npm run model:train`. Detail data, label, split, metrik, keterbatasan, dan kebutuhan label nyata ada pada [model card](docs/MODEL-QUALITY.md).
+
+## Data nonkapitasi dan model struktur terlatih
+
+Lampiran `DM2024_nonkapitasi.dta` berhasil diolah: 3.890 baris dan 24 kolom. Pipeline baru melatih Isolation Forest pada fitur struktur (3.170 baris training, 720 holdout; peserta antar-split tidak beririsan). Hanya dua pola fitur ditemukan, sehingga kemampuan model terbatas. Tidak ada label reviewer atau klaim akurasi klinis/fraud.
+
+**Workbench → Analisis Nonkapitasi** menerima laporan JSON privat hasil pipeline; raw data dan model pengguna tidak disertakan dalam Git/bundle. Ringkasan diagnosis dapat diimpor melalui profil **Nonkapitasi**. Lihat [hasil, batasan, lokasi privat, dan cara menjalankan](docs/NONKAPITASI.md).
