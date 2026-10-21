@@ -6,6 +6,7 @@ import {
   Card,
   EmptyState,
   Input,
+  Select,
   Table,
 } from "../components/ui";
 import { useDemoAuth } from "../lib/auth";
@@ -18,6 +19,7 @@ import {
 export default function DiagnosisAnalysis() {
   const { session } = useDemoAuth();
   const [data, setData] = useState<DiagnosisSummary | null>(null),
+    [profile, setProfile] = useState<DiagnosisSummary["dataset"]>("FKRTL"),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [consent, setConsent] = useState(false),
@@ -38,13 +40,14 @@ export default function DiagnosisAnalysis() {
       )
         throw new Error("FORMAT");
       const parsed = analyzeDiagnoses(JSON.parse(await file.text())).data;
+      if (parsed.dataset !== profile) throw new Error("DATASET_MISMATCH");
       setData(parsed);
       setSuccess(
         "Ringkasan dimuat dan dianalisis lokal. Tidak ada data yang dikirim ke server atau disimpan permanen.",
       );
     } catch {
       setError(
-        "Impor ditolak. Pilih JSON agregat ≤5 MiB dari konverter JELAS, periksa hak akses, konfirmasi izin, skema, jumlah, dan supresi sel kecil. Data sebelumnya tidak diganti.",
+        "Impor ditolak. Pilih JSON agregat ≤5 MiB dari konverter JELAS, periksa hak akses, konfirmasi izin, profil sumber, skema, jumlah, dan supresi sel kecil. Data sebelumnya tidak diganti.",
       );
     } finally {
       setBusy(false);
@@ -64,7 +67,7 @@ export default function DiagnosisAnalysis() {
           JELAS · ANALISIS DATA DIAGNOSIS
         </p>
         <h1 className="mt-2 text-2xl font-bold">
-          Diagnosis sekunder: kualitas data & pola agregat
+          Diagnosis FKRTL / sekunder: kualitas data & pola agregat
         </h1>
         <p className="mt-2 text-sm text-slate-500">
           Analisis lokal berbasis aturan yang dapat dijelaskan. Bukan model AI
@@ -95,6 +98,28 @@ export default function DiagnosisAnalysis() {
           risiko pengungkapan sebelum impor.
         </label>
         <label className="block text-sm font-semibold">
+          Profil sumber yang diharapkan
+          <Select
+            value={profile}
+            disabled={busy}
+            onChange={(e) => {
+              setProfile(e.target.value as DiagnosisSummary["dataset"]);
+              setData(null);
+              setSuccess("");
+              setError("");
+            }}
+          >
+            <option value="FKRTL">FKRTL</option>
+            <option value="SECONDARY_DIAGNOSES">Diagnosis sekunder</option>
+            <option value="UNSPECIFIED">Belum ditentukan (format lama)</option>
+          </Select>
+        </label>
+        <p className="text-xs text-slate-500">
+          Profil ditentukan pemilik data, bukan dideteksi dari nama file. Impor
+          mengganti ringkasan aktif, tidak melakukan join pasien atau
+          menjumlahkan kedua dataset.
+        </p>
+        <label className="block text-sm font-semibold">
           Ringkasan JSON agregat
           <Input
             className="mt-2"
@@ -112,7 +137,7 @@ export default function DiagnosisAnalysis() {
           <Button
             disabled={busy || !allowed}
             onClick={() => {
-              setData(syntheticDiagnosisSummary());
+              setData(syntheticDiagnosisSummary(profile));
               setError("");
               setSuccess("Contoh sintetis dimuat; bukan hasil file DM2024.");
             }}
@@ -142,7 +167,7 @@ export default function DiagnosisAnalysis() {
           </summary>
           <pre className="mt-3 overflow-auto rounded-xl bg-slate-100 p-3 text-xs dark:bg-slate-800">
             {
-              "python -m pip install -r tools/requirements-diagnoses.txt\npython tools/process_diagnoses.py /path/DM2024_diagnosissekunder.dta --inspect\npython tools/process_diagnoses.py /path/DM2024_diagnosissekunder.dta --diagnosis-column KOLOM_RESMI --output /tmp/diagnosis-summary.json"
+              "python -m pip install -r tools/requirements-diagnoses.txt\npython tools/process_diagnoses.py /path/DM2024_fkrtl.dta --inspect\npython tools/process_diagnoses.py /path/DM2024_fkrtl.dta --dataset FKRTL --diagnosis-column KOLOM_RESMI --output /tmp/fkrtl-diagnosis-summary.json"
             }
           </pre>
         </details>
@@ -171,6 +196,10 @@ export default function DiagnosisAnalysis() {
               ? "DATA SINTETIS"
               : "AGREGAT PENGGUNA · BUKAN DATA DEMO"}
           </Badge>
+          <p className="text-sm font-semibold">
+            Sumber dataset: {data!.dataset} · Profil tidak membuktikan isi atau
+            keaslian data.
+          </p>
           <div className="grid gap-4 sm:grid-cols-4">
             {[
               ["Baris sumber", data!.rows],

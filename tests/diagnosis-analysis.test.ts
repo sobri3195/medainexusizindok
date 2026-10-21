@@ -45,3 +45,20 @@ test("rejects raw rows, extra sensitive fields, unsafe codes and invalid numeric
   ])
     assert.throws(() => analyzeDiagnoses(bad));
 });
+test("FKRTL and secondary profiles are explicit and legacy imports remain unspecified", () => {
+  assert.equal(
+    analyzeDiagnoses(syntheticDiagnosisSummary("FKRTL")).data.dataset,
+    "FKRTL",
+  );
+  assert.equal(
+    analyzeDiagnoses(syntheticDiagnosisSummary("SECONDARY_DIAGNOSES")).data
+      .dataset,
+    "SECONDARY_DIAGNOSES",
+  );
+  const { dataset: _, ...old } = syntheticDiagnosisSummary();
+  void _;
+  assert.equal(analyzeDiagnoses(old).data.dataset, "UNSPECIFIED");
+  assert.throws(() =>
+    analyzeDiagnoses({ ...old, dataset: "INVENTED_PROFILE" }),
+  );
+});

@@ -17,6 +17,7 @@ python tools/process_diagnoses.py /path/DM2024_diagnosissekunder.dta --inspect
 
 ```bash
 python tools/process_diagnoses.py /path/DM2024_diagnosissekunder.dta \
+  --dataset SECONDARY_DIAGNOSES \
   --diagnosis-column KOLOM_RESMI \
   --output /tmp/diagnosis-summary.json
 ```
@@ -59,3 +60,5 @@ npm run test:browser
 ```
 
 Pengujian Python membuat fixture Stata sintetis temporer, lalu memeriksa pembacaan chunk, inspeksi kolom, agregasi, supresi, pemetaan salah, batas minimum, dan perlindungan penimpaan. Unit test TypeScript memeriksa kontrak/aturan dan penolakan field sensitif atau hitungan tidak konsisten. Pengujian fixture **tidak** berarti file asli sudah diolah.
+
+Profil sumber kini diperiksa oleh importer. Pilih FKRTL, Diagnosis sekunder, atau Belum ditentukan (format lama) sesuai field `dataset` ringkasan; format lama tanpa field tersebut dibaca sebagai UNSPECIFIED. Profil berbeda tidak digabung. Lihat [FKRTL](DATA-FKRTL.md).

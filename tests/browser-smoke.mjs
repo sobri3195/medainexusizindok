@@ -230,6 +230,7 @@ try {
   await page.getByRole("checkbox").check();
   const summary = {
     format: "jelas-diagnoses-aggregate-v1",
+    dataset: "FKRTL",
     mode: "USER_AGGREGATE",
     sourceType: "STATA_LOCAL_AGGREGATION",
     minCellCount: 10,
@@ -240,25 +241,24 @@ try {
     suppressed: 0,
     groups: [{ code: "E11.9", count: 20 }],
   };
-  await page
-    .getByLabel("Ringkasan JSON agregat")
-    .setInputFiles({
-      name: "summary.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(summary)),
-    });
+  await page.getByLabel("Ringkasan JSON agregat").setInputFiles({
+    name: "summary.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(summary)),
+  });
   await page
     .getByText("AGREGAT PENGGUNA · BUKAN DATA DEMO", { exact: true })
     .waitFor();
-  await page
-    .getByLabel("Ringkasan JSON agregat")
-    .setInputFiles({
-      name: "bad.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(
-        JSON.stringify({ ...summary, patientId: "forbidden" }),
-      ),
-    });
+  await page.getByLabel("Ringkasan JSON agregat").setInputFiles({
+    name:"wrong-profile.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify({...summary,dataset:"SECONDARY_DIAGNOSES"}))
+  });
+  await page.getByRole("alert").filter({hasText:"Impor ditolak"}).waitFor();
+  await page.getByText("Sumber dataset: FKRTL",{exact:false}).waitFor();
+  await page.getByLabel("Ringkasan JSON agregat").setInputFiles({
+    name: "bad.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify({ ...summary, patientId: "forbidden" })),
+  });
   await page.getByRole("alert").filter({ hasText: "Impor ditolak" }).waitFor();
   await page
     .getByRole("button", { name: "Hapus ringkasan dari memori" })

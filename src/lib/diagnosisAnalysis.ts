@@ -4,6 +4,9 @@ export const diagnosisSummarySchema = z
   .object({
     format: z.literal("jelas-diagnoses-aggregate-v1"),
     mode: z.enum(["SYNTHETIC", "USER_AGGREGATE"]),
+    dataset: z
+      .enum(["UNSPECIFIED", "FKRTL", "SECONDARY_DIAGNOSES"])
+      .default("UNSPECIFIED"),
     sourceType: z.literal("STATA_LOCAL_AGGREGATION"),
     minCellCount: count.min(10),
     rows: count.min(10),
@@ -76,10 +79,13 @@ export function analyzeDiagnoses(input: unknown) {
     usablePercent: Number(((data.valid / data.rows) * 100).toFixed(1)),
   };
 }
-export function syntheticDiagnosisSummary(): DiagnosisSummary {
+export function syntheticDiagnosisSummary(
+  dataset: DiagnosisSummary["dataset"] = "SECONDARY_DIAGNOSES",
+): DiagnosisSummary {
   return {
     format: "jelas-diagnoses-aggregate-v1",
     mode: "SYNTHETIC",
+    dataset,
     sourceType: "STATA_LOCAL_AGGREGATION",
     minCellCount: 10,
     rows: 100,
