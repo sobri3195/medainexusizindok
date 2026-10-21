@@ -22,6 +22,7 @@ const Landing=lazy(()=>import('./pages/Landing'))
 const Desktop=lazy(()=>import('./pages/Desktop'))
 const DesktopLogin=lazy(()=>import('./pages/DesktopLogin'))
 const LocalDataCenter=lazy(()=>import('./pages/LocalDataCenter'))
+const DiagnosisAnalysis=lazy(()=>import('./pages/DiagnosisAnalysis'))
 const RiskEngine=lazy(()=>import('./pages/RiskEngine'))
 const Reports=lazy(()=>import('./pages/Reports'))
 const MetricDictionary=lazy(()=>import('./pages/Reports').then(module=>({default:module.MetricDictionary})))
@@ -72,6 +73,7 @@ export default function App(){return <DemoAuthProvider><CommandPalette/><Routes>
     <Route path="capd" element={<Page component={Capd}/>}/>
     <Route path="pharmacy" element={<Page component={Pharmacy}/>}/>
     <Route path="dpjp" element={<Page component={Dpjp}/>}/>
+    <Route path="diagnosis-analysis" element={<Page component={DiagnosisAnalysis}/>}/>
     <Route path="risk-engine" element={<Page component={RiskEngine}/>}/>
     <Route path="reports" element={<Page component={Reports}/>}/>
     <Route path="metrics" element={<Page component={MetricDictionary}/>}/>
