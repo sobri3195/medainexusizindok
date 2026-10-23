@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { setTimeout as delay } from "node:timers/promises";
 const port = 4175,
   base = `http://127.0.0.1:${port}`;
@@ -289,6 +289,60 @@ try {
     .waitFor();
   await page.getByLabel("Ganti role").selectOption("Admin Demo");
   await page.goto(base + "/desktop/dispensing");
+  // Optional private report is imported only into this isolated browser context.
+  // No raw file or report is copied into the repository or served as a web asset.
+  if (process.env.JELAS_NONKAPITASI_REPORT) {
+    const bytes = readFileSync(process.env.JELAS_NONKAPITASI_REPORT);
+    const expected = JSON.parse(bytes.toString());
+    await page.goto(base + "/desktop/nonkapitasi");
+    await page.getByRole("checkbox").check();
+    await page
+      .getByLabel("Laporan nonkapitasi JSON")
+      .setInputFiles({
+        name: "nonkapitasi-analysis.json",
+        mimeType: "application/json",
+        buffer: bytes,
+      });
+    await page.getByText("Laporan berhasil dimuat.", { exact: true }).waitFor();
+    await page
+      .getByRole("heading", {
+        name:
+          expected.mode === "SYNTHETIC"
+            ? "Model dilatih pada fixture sintetis"
+            : "Model dilatih pada data pengguna",
+        exact: true,
+      })
+      .waitFor();
+    await page.getByText(String(expected.rows), { exact: true }).waitFor();
+    await page
+      .getByLabel("Laporan nonkapitasi JSON")
+      .setInputFiles({
+        name: "bad-report.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(
+          JSON.stringify({ ...expected, patientId: "FORBIDDEN" }),
+        ),
+      });
+    await page
+      .getByRole("alert")
+      .filter({ hasText: "Laporan ditolak" })
+      .waitFor();
+    await page
+      .getByRole("button", { name: "Hapus laporan dari memori", exact: true })
+      .click();
+    await page
+      .getByText("Belum ada laporan nonkapitasi yang dimuat", { exact: true })
+      .waitFor();
+    await page.getByLabel("Ganti role").selectOption("DPJP");
+    await page
+      .getByText("Analisis Nonkapitasi memerlukan", { exact: false })
+      .waitFor();
+    await page.getByLabel("Ganti role").selectOption("Admin Demo");
+    await page.goto(base + "/desktop/dispensing");
+    console.log(
+      "Private nonkapitasi aggregate report import, validation and RBAC passed.",
+    );
+  }
   // All generated JS/CSS must be precached; test routes and a new transaction offline.
   await page.evaluate(async () => {
     const registration = await navigator.serviceWorker.ready;
